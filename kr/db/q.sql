@@ -1,4 +1,0 @@
-SELECT *
-FROM S, V
-WHERE S.sId = V.sId
-ORDER BY V._id

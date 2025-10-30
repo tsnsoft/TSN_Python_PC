@@ -45,9 +45,12 @@ def modify_file(file):
 
 def run():
     current_dir = os.path.abspath(os.curdir)
+    print(current_dir)
     html_directory = os.path.join(current_dir, 'HTML')
+    print(html_directory)
 
     htm_files = scan_directory(html_directory, (".htm"))
+    print(htm_files)
 
     print("Найдено файлов для обработки:", len(htm_files))
     for file in htm_files:

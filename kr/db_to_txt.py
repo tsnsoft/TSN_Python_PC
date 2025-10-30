@@ -1,27 +1,34 @@
 import sqlite3
+import os
 
-conn = sqlite3.connect("db\q.db ")
+# Создаём папку txt, если её нет
+os.makedirs("txt", exist_ok=True)
 
-cursor_s = conn.cursor()
-cursor_v = conn.cursor()
+# Подключаемся к базе
+with sqlite3.connect("db/q.db") as conn:
+    conn.row_factory = sqlite3.Row  # ← Позволяет обращаться по именам колонок
+    cur = conn.cursor()
 
-sql_sur = "SELECT sId, titleTranslation FROM S ORDER BY sId"
-cursor_s.execute(sql_sur)
-for s in cursor_s.fetchall():
-    sId = s[0]
-    title = s[1]
-    sh = "Section " + "{:03d}".format(sId) + " " + title
-    sh2 = 'Section ' + str(sId) + ' "' + title + '"'
-    print(sh)
-    f = open('TXT/' + sh + ".txt", 'w', encoding='UTF-8')
-    f.writelines(sh2 + '\n\n')
+    # Получаем все секции
+    cur.execute("SELECT sId, titleTranslation FROM S ORDER BY sId")
+    for sec in cur:
+        sId = sec["sId"]
+        title = sec["titleTranslation"]
 
-    sql_vers = "SELECT * FROM V WHERE sId = ? ORDER BY _id"
-    cursor_v.execute(sql_vers, [(sId)])
-    for v in cursor_v.fetchall():
-        vrId = v[2]
-        vr = v[3]
-        vrTxt = str(vrId) + '. ' + vr
-        print(vrTxt)
-        f.writelines(vrTxt + '\n')
-    f.close()
+        filename = f"txt/Глава {sId:03d} {title}.txt"
+        header = f'Глава {sId} "{title}"\n\n'
+
+        print(f"Создаю: {filename}")
+
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(header)
+
+            # Получаем стихи для этой секции
+            cur2 = conn.cursor()
+            cur2.execute("SELECT vrId, vr FROM V WHERE sId = ? ORDER BY _id", (sId,))
+            for v in cur2:
+                line = f"{v[0]}. {v[1]}\n"
+                f.write(line)
+                print(line.strip())
+
+print("\nГотово! Все файлы в папке txt")

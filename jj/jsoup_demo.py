@@ -1,8 +1,16 @@
-#!/usr/bin/env python3
-# coding=utf-8
+import requests
+from bs4 import BeautifulSoup
 
-import requests, bs4
+url = "https://sinoptik.ua/ru/pohoda/pavlodar"
+headers = {"User-Agent": "Mozilla/5.0"}
 
-b = bs4.BeautifulSoup(requests.get('https://sinoptik.ua/погода-павлодар').text, "html.parser")
-print(b.select('.today-time')[0].getText(), end=" около ")
-print(b.select('.today-temp')[0].getText())
+response = requests.get(url, headers=headers)
+soup = BeautifulSoup(response.text, "html.parser")
+
+# Текущая температура
+temp = soup.select_one(".R1ENpvZz").get_text(strip=True)
+
+# Описание погоды (оттуда берём "утром", "днём" и т.п.)
+desc = soup.select_one(".GVzzzKDV").get_text(strip=True)
+
+print(f"{desc} Погода сейчас {temp}")
